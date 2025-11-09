@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Send, RotateCcw } from "lucide-react";
 
 interface ChatMessage {
@@ -9,7 +9,7 @@ interface ChatMessage {
 interface ChatViewProps {
   messages: ChatMessage[];
   onSendMessage: (message: string) => void;
-  onResetChat?: () => void; // ✅ new prop
+  onResetChat?: () => void;
 }
 
 export const ChatView: React.FC<ChatViewProps> = ({
@@ -18,13 +18,22 @@ export const ChatView: React.FC<ChatViewProps> = ({
   onResetChat,
 }) => {
   const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false); // ✅ typing animation flag
 
   const handleSend = () => {
     if (input.trim()) {
       onSendMessage(input.trim());
       setInput("");
+      setIsTyping(true); // start showing typing dots after user sends
     }
   };
+
+  // ✅ stop typing animation once AI sends response
+  useEffect(() => {
+    if (messages.length > 0 && messages[messages.length - 1].sender === "ai") {
+      setIsTyping(false);
+    }
+  }, [messages]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleSend();
@@ -52,24 +61,37 @@ export const ChatView: React.FC<ChatViewProps> = ({
             💬 Start a conversation...
           </div>
         ) : (
-          messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`flex ${
-                msg.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
+          <>
+            {messages.map((msg, i) => (
               <div
-                className={`max-w-[75%] p-3 rounded-xl text-sm ${
-                  msg.sender === "user"
-                    ? "bg-blue-600 text-white"
-                    : "bg-[#2b2b2b] text-gray-200"
+                key={i}
+                className={`flex ${
+                  msg.sender === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {msg.text}
+                <div
+                  className={`max-w-[75%] p-3 rounded-xl text-sm ${
+                    msg.sender === "user"
+                      ? "bg-blue-600 text-white"
+                      : "bg-[#2b2b2b] text-gray-200"
+                  }`}
+                >
+                  {msg.text}
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+
+            {/* ✅ Animated AI typing dots */}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="bg-[#2b2b2b] text-gray-200 rounded-xl px-3 py-2 flex items-center space-x-1">
+                  <div className="dot bg-gray-400 w-2 h-2 rounded-full animate-bounce"></div>
+                  <div className="dot bg-gray-400 w-2 h-2 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                  <div className="dot bg-gray-400 w-2 h-2 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

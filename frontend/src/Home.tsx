@@ -5,6 +5,7 @@ import { DeleteModal } from "./components/DeleteModal";
 import { TableView } from "./components/TableView";
 import { TodoListView } from "./components/TodoListView";
 import { ChatView } from "./components/ChatView";
+import { GmailInbox } from "./components/GmailInbox"; // ✅ Inbox view
 
 interface ChatMessage {
   sender: "user" | "ai";
@@ -20,7 +21,7 @@ interface DataFile {
 const HomePage: React.FC = () => {
   const [dataFiles, setDataFiles] = useState<DataFile[]>([]);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [activeView, setActiveView] = useState<"data" | "chat">("data");
+  const [activeView, setActiveView] = useState<"data" | "chat" | "inbox">("data");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeData, setActiveData] = useState<any>(null);
@@ -28,10 +29,9 @@ const HomePage: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
 
-  // ✅ Load JSON files
+  // ✅ Load JSON files from /data
   const loadDataFiles = useCallback(async () => {
     try {
-      // Wait for preload to initialize
       for (let i = 0; i < 20 && !window.electronAPI; i++) {
         await new Promise((r) => setTimeout(r, 50));
       }
@@ -81,22 +81,29 @@ const HomePage: React.FC = () => {
   const saveFile = useCallback(async (file: string, data: any) => {
     if (!window.electronAPI) return;
     try {
-      await window.electronAPI.invoke(
-        "writeFile",
-        file,
-        JSON.stringify(data, null, 2)
-      );
+      await window.electronAPI.invoke("writeFile", file, JSON.stringify(data, null, 2));
       console.log("💾 Saved:", file);
     } catch (e) {
       console.error("❌ Save failed:", e);
     }
   }, []);
 
-  // ✅ File selection
+  // ✅ File selection (for table/todo)
   const handleFileSelect = (index: number) => {
     setActiveIndex(index);
     setActiveData(dataFiles[index].data);
     setActiveView("data");
+  };
+
+  // ✅ Handle sidebar view change
+  const handleViewChange = (view: "data" | "chat" | "inbox") => {
+    setActiveView(view);
+
+    // Clear file selection when moving to non-data views
+    if (view !== "data") {
+      setActiveIndex(null);
+      setActiveData(null);
+    }
   };
 
   // ✅ Request delete modal
@@ -115,7 +122,6 @@ const HomePage: React.FC = () => {
         const updatedFiles = dataFiles.filter((f) => f.file !== fileToDelete);
         setDataFiles(updatedFiles);
 
-        // Reset active file if deleted one was active
         if (dataFiles[activeIndex!]?.file === fileToDelete) {
           if (updatedFiles.length > 0) {
             setActiveIndex(0);
@@ -136,7 +142,7 @@ const HomePage: React.FC = () => {
     }
   };
 
-  // ✅ Update file data and persist
+  // ✅ Update file data
   const updateActiveData = (newData: any) => {
     if (activeIndex === null) return;
     setActiveData(newData);
@@ -162,25 +168,14 @@ const HomePage: React.FC = () => {
       const data = await res.json();
       console.log("🤖 AI Response:", data);
 
-      // 🧩 Tool-generated file
       if (data.mode === "tool" && data.result?.content) {
         const jsonData = data.result.content;
-        const fileName = `${jsonData.name
-          .toLowerCase()
-          .replace(/\s+/g, "_")}.json`;
+        const fileName = `${jsonData.name.toLowerCase().replace(/\s+/g, "_")}.json`;
 
-        await window.electronAPI.invoke(
-          "writeFile",
-          fileName,
-          JSON.stringify(jsonData, null, 2)
-        );
-
+        await window.electronAPI.invoke("writeFile", fileName, JSON.stringify(jsonData, null, 2));
         setChatMessages((prev) => [
           ...prev,
-          {
-            sender: "ai",
-            text: `✅ Created new file "${jsonData.name}" (${jsonData.type})`,
-          },
+          { sender: "ai", text: `✅ Created new file "${jsonData.name}" (${jsonData.type})` },
         ]);
 
         await loadDataFiles();
@@ -188,20 +183,15 @@ const HomePage: React.FC = () => {
         return;
       }
 
-      // 💬 Normal AI response
-      const aiMessage =
-        data.generated_text || data.result || "⚙️ No response received.";
+      const aiMessage = data.generated_text || data.result || "⚙️ No response received.";
       setChatMessages((prev) => [...prev, { sender: "ai", text: aiMessage }]);
     } catch (err: any) {
       console.error("❌ Chat error:", err);
-      setChatMessages((prev) => [
-        ...prev,
-        { sender: "ai", text: `❌ Error: ${err.message}` },
-      ]);
+      setChatMessages((prev) => [...prev, { sender: "ai", text: `❌ Error: ${err.message}` }]);
     }
   };
 
-  // === Table actions ===
+  // === Table + Todo actions ===
   const handleValueChange = (row: number, col: number, val: string) => {
     const newValues = activeData.values.map((r: any[], i: number) =>
       i === row ? r.map((c, j) => (j === col ? val : c)) : r
@@ -219,7 +209,6 @@ const HomePage: React.FC = () => {
     updateActiveData({ ...activeData, values: newValues });
   };
 
-  // === Todo actions ===
   const handleToggleTodo = (i: number) => {
     const newItems = activeData.items.map((t: any, idx: number) =>
       idx === i ? { ...t, done: !t.done } : t
@@ -259,19 +248,20 @@ const HomePage: React.FC = () => {
         activeIndex={activeIndex ?? -1}
         activeView={activeView}
         onFileSelect={handleFileSelect}
-        onViewChange={setActiveView}
+        onViewChange={handleViewChange} // ✅ Updated
         onCreateNew={() => setShowModal(true)}
         onDeleteFile={requestFileDelete}
       />
 
-      {/* ✅ Chat always accessible */}
       <main className="flex-1 flex flex-col overflow-y-auto scroll-smooth">
         {activeView === "chat" ? (
           <ChatView
             messages={chatMessages}
             onSendMessage={handleSendMessage}
-            onResetChat={() => setChatMessages([])} // 🌀 New Chat button
+            onResetChat={() => setChatMessages([])}
           />
+        ) : activeView === "inbox" ? (
+          <GmailInbox />
         ) : !activeData ? (
           <div className="flex items-center justify-center flex-1 text-gray-400">
             No JSON file found in /data

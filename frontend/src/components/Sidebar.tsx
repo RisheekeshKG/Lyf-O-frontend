@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState } from "react";
+import React, { memo, useMemo } from "react";
 import {
   Settings,
   Search,
@@ -51,9 +51,9 @@ SidebarItem.displayName = "SidebarItem";
 interface SidebarProps {
   dataFiles: Array<{ name: string; file: string; data: any }>;
   activeIndex: number;
-  activeView: "data" | "chat";
+  activeView: "data" | "chat" | "inbox";
   onFileSelect: (index: number) => void;
-  onViewChange: (view: "data" | "chat") => void;
+  onViewChange: (view: "data" | "chat" | "inbox") => void;
   onCreateNew: () => void;
   onDeleteFile: (file: string) => void;
 }
@@ -77,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = memo(
             text={f.name}
             active={idx === activeIndex && activeView === "data"}
             onClick={() => onFileSelect(idx)}
-            onDelete={() => onDeleteFile(f.file)} // 🗑️ delete handler
+            onDelete={() => onDeleteFile(f.file)}
           />
         )),
       [dataFiles, activeIndex, activeView, onFileSelect, onDeleteFile]
@@ -85,6 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = memo(
 
     return (
       <aside className="w-60 bg-[#1f1f1f] border-r border-gray-700 flex flex-col justify-between">
+        {/* --- Top section --- */}
         <div>
           <div className="p-4 text-lg font-semibold truncate">
             Risheekesh K G&apos;s Space
@@ -93,13 +94,21 @@ export const Sidebar: React.FC<SidebarProps> = memo(
           <nav className="flex flex-col gap-1 px-3 overflow-y-auto">
             <SidebarItem icon={<Search size={18} />} text="Search" />
             <SidebarItem icon={<HomeIcon size={18} />} text="Home" />
+
             <SidebarItem
               icon={<MessageCircle size={18} />}
               text="AI Chat"
               active={activeView === "chat"}
               onClick={() => onViewChange("chat")}
             />
-            <SidebarItem icon={<Inbox size={18} />} text="Inbox" />
+
+            {/* ✅ Inbox button now functional */}
+            <SidebarItem
+              icon={<Inbox size={18} />}
+              text="Inbox"
+              active={activeView === "inbox"}
+              onClick={() => onViewChange("inbox")}
+            />
 
             <div className="pt-3 text-xs text-gray-400 uppercase flex items-center justify-between">
               <span>Private</span>
@@ -122,6 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = memo(
           </nav>
         </div>
 
+        {/* --- Bottom settings --- */}
         <div className="p-3 border-t border-gray-700">
           <SidebarItem icon={<Settings size={18} />} text="Settings" />
         </div>

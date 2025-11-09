@@ -2,11 +2,18 @@
 const electron = require("electron");
 console.log("🔌 [Preload] Script loaded. Injecting APIs...");
 const validInvokes = [
+  // File system
   "readDir",
   "readFile",
   "writeFile",
-  "deleteFile"
-  // 🟢 Added delete support
+  "deleteFile",
+  // Gmail integration
+  "gmail-auth",
+  "gmail-exchange",
+  "gmail-list",
+  "gmail-get-message",
+  "gmail-signout",
+  "gmail-check-auth"
 ];
 console.log("📡 [Preload] Allowed IPC channels:", validInvokes);
 electron.contextBridge.exposeInMainWorld("electronAPI", {

@@ -1,20 +1,27 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, shell } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "fs/promises";
 import fsSync from "fs";
+import dotenv from "dotenv";
+import { google } from "googleapis";
+import keytar from "keytar";
+import { createServer } from "http";
+import open from "open";
+import destroyer from "server-destroy";
+
+// ===================================================
+// 🌱 BASE SETUP
+// ===================================================
+
+dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// 🌱 Define app root (frontend folder)
 process.env.APP_ROOT = path.join(__dirname, "..");
 
-console.log("🔧 __dirname =", __dirname);
-console.log("🔧 process.env.APP_ROOT =", process.env.APP_ROOT);
-
-// 🚧 Avoid vite define plugin issues
 export const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 export const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
@@ -23,72 +30,40 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
   ? path.join(process.env.APP_ROOT, "public")
   : RENDERER_DIST;
 
-// 🌍 Debug info
-console.log("🌍 ENV CHECK:");
-console.log("   VITE_DEV_SERVER_URL =", VITE_DEV_SERVER_URL);
-console.log("   MAIN_DIST =", MAIN_DIST);
-console.log("   RENDERER_DIST =", RENDERER_DIST);
-console.log("   VITE_PUBLIC =", process.env.VITE_PUBLIC);
-
 let win: BrowserWindow | null;
-
-// 🧩 Detect environment
 const IS_DEV = Boolean(VITE_DEV_SERVER_URL);
-console.log("🔎 Running mode:", IS_DEV ? "DEV" : "PROD");
 
-// ✅ Use frontend/data in dev, userData/data in prod
+// === Data folder (for JSON files)
 const DEV_DATA_DIR = path.resolve(process.env.APP_ROOT!, "../frontend/data");
 const PROD_DATA_DIR = path.join(app.getPath("userData"), "data");
 const DATA_DIR = IS_DEV ? DEV_DATA_DIR : PROD_DATA_DIR;
 
-console.log("📁 DEV_DATA_DIR =", DEV_DATA_DIR);
-console.log("📁 PROD_DATA_DIR =", PROD_DATA_DIR);
-console.log("📁 Active DATA_DIR =", DATA_DIR);
-
-// === Ensure data dir exists ===
 async function ensureDataDir() {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
     console.log(`📂 Ensured data dir: ${DATA_DIR}`);
-
-    if (!fsSync.existsSync(DATA_DIR)) {
-      console.warn("⚠️ Data folder not found!");
-    } else {
-      console.log("📄 Files in data dir:", fsSync.readdirSync(DATA_DIR));
-    }
   } catch (err) {
     console.error("❌ Failed to create data dir:", err);
   }
 }
 
-// === Resolve preload ===
 function resolvePreloadPath() {
-  const possiblePaths = [
+  const paths = [
     path.join(__dirname, "preload.js"),
     path.join(__dirname, "../dist-electron/preload.js"),
     path.join(__dirname, "../../frontend/dist-electron/preload.js"),
   ];
-
-  for (const p of possiblePaths) {
-    if (fsSync.existsSync(p)) {
-      console.log("⚙️ Using preload script:", p);
-      return p;
-    }
-  }
-
-  console.error("❌ No valid preload script found!");
-  return possiblePaths[0];
+  for (const p of paths) if (fsSync.existsSync(p)) return p;
+  console.warn("⚠️ No preload.js found, fallback used");
+  return paths[0];
 }
 
-// === Create Window ===
 function createWindow() {
-  console.log("🚪 Creating main window...");
   const preloadPath = resolvePreloadPath();
-
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC!, "electron-vite.svg"),
-    width: 1000,
-    height: 700,
+    width: 1100,
+    height: 750,
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -97,106 +72,205 @@ function createWindow() {
   });
 
   win.webContents.on("did-finish-load", () => {
-    console.log("✅ Renderer finished loading.");
-    win?.webContents.send(
-      "fromMain",
-      `👋 Hello from main process! (${IS_DEV ? "DEV" : "PROD"})`
-    );
+    win?.webContents.send("fromMain", `👋 Hello from main (${IS_DEV ? "DEV" : "PROD"})`);
   });
 
-  if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL);
-  } else {
-    win.loadFile(path.join(RENDERER_DIST, "index.html"));
-  }
+  if (VITE_DEV_SERVER_URL) win.loadURL(VITE_DEV_SERVER_URL);
+  else win.loadFile(path.join(RENDERER_DIST, "index.html"));
 
-  win.on("closed", () => {
-    win = null;
-  });
+  win.on("closed", () => (win = null));
 }
 
-// === Lifecycle ===
 app.whenReady().then(async () => {
   await ensureDataDir();
   createWindow();
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-    win = null;
-  }
+  if (process.platform !== "darwin") app.quit();
 });
-
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
 // ===================================================
-// 🗂️ FILE SYSTEM IPC HANDLERS
+// 🗂️ FILE SYSTEM HANDLERS
 // ===================================================
 
-// 📂 Read directory
-ipcMain.handle("readDir", async (_event, relativeDir?: string) => {
-  console.log("📂 IPC → readDir called with:", relativeDir);
+ipcMain.handle("readDir", async () => {
   try {
-    const fullPath = relativeDir ? path.join(DATA_DIR, relativeDir) : DATA_DIR;
-    const files = await fs.readdir(fullPath, { withFileTypes: true });
-    const fileList = files.filter((f) => f.isFile()).map((f) => f.name);
-    console.log("   Files found:", fileList);
-    return fileList;
+    const files = await fs.readdir(DATA_DIR, { withFileTypes: true });
+    return files.filter((f) => f.isFile()).map((f) => f.name);
   } catch (error) {
-    console.error("❌ Error reading directory:", error);
+    console.error("❌ readDir error:", error);
     return [];
   }
 });
 
-// 📖 Read file
-ipcMain.handle("readFile", async (_event, filename: string) => {
+ipcMain.handle("readFile", async (_e, filename: string) => {
   try {
-    const safeName = path.basename(filename);
-    const filePath = path.join(DATA_DIR, safeName);
-    const data = await fs.readFile(filePath, "utf-8");
-    console.log("📖 Read file:", filePath);
+    const safe = path.basename(filename);
+    const data = await fs.readFile(path.join(DATA_DIR, safe), "utf-8");
     return JSON.parse(data);
   } catch (error) {
-    console.error(`❌ Error reading file ${filename}:`, error);
+    console.error("❌ readFile error:", error);
     return null;
   }
 });
 
-// 💾 Write file
-ipcMain.handle("writeFile", async (_event, filename: string, content: string) => {
+ipcMain.handle("writeFile", async (_e, filename: string, content: string) => {
   try {
-    const safeName = path.basename(filename);
-    const filePath = path.join(DATA_DIR, safeName);
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.writeFile(filePath, content, "utf-8");
-    console.log(`💾 Wrote file: ${filePath}`);
+    const safe = path.basename(filename);
+    await fs.writeFile(path.join(DATA_DIR, safe), content, "utf-8");
     return { success: true };
-  } catch (error: any) {
-    console.error(`❌ Error writing file ${filename}:`, error);
-    return { success: false, error: error.message };
+  } catch (err: any) {
+    console.error("❌ writeFile error:", err);
+    return { success: false, error: err.message };
   }
 });
 
-// 🗑️ Delete file
-ipcMain.handle("deleteFile", async (_event, filename: string) => {
-  console.log("🗑️ IPC → deleteFile called:", filename);
+ipcMain.handle("deleteFile", async (_e, filename: string) => {
   try {
-    const safeName = path.basename(filename);
-    const filePath = path.join(DATA_DIR, safeName);
-
-    if (!fsSync.existsSync(filePath)) {
-      console.warn(`⚠️ File not found: ${filePath}`);
-      return { success: false, error: "File not found" };
-    }
-
+    const safe = path.basename(filename);
+    const filePath = path.join(DATA_DIR, safe);
+    if (!fsSync.existsSync(filePath)) return { success: false, error: "File not found" };
     await fs.unlink(filePath);
-    console.log(`✅ Deleted file: ${filePath}`);
+    console.log(`🗑️ Deleted file: ${filePath}`);
     return { success: true };
-  } catch (error: any) {
-    console.error(`❌ Error deleting file ${filename}:`, error);
-    return { success: false, error: error.message };
+  } catch (err: any) {
+    console.error("❌ deleteFile error:", err);
+    return { success: false, error: err.message };
   }
 });
+
+// ===================================================
+// 📬 GMAIL INTEGRATION (Loopback Redirect Flow)
+// ===================================================
+
+const GMAIL_SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
+const OAUTH_SERVICE = "electron-gmail";
+const OAUTH_ACCOUNT = "gmail-token";
+
+function createOAuthClient() {
+  const id = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const secret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+  const redirectUri = "http://127.0.0.1:3000";
+
+  if (!id || !secret) throw new Error("Missing Google OAuth credentials in .env");
+  return new google.auth.OAuth2(id, secret, redirectUri);
+}
+
+async function storeTokens(tokens: any) {
+  await keytar.setPassword(OAUTH_SERVICE, OAUTH_ACCOUNT, JSON.stringify(tokens));
+}
+async function loadTokens() {
+  const s = await keytar.getPassword(OAUTH_SERVICE, OAUTH_ACCOUNT);
+  return s ? JSON.parse(s) : null;
+}
+async function clearTokens() {
+  await keytar.deletePassword(OAUTH_SERVICE, OAUTH_ACCOUNT);
+}
+
+// === Step 1: Auth Flow ===
+ipcMain.handle("gmail-auth", async () => {
+  try {
+    const oAuth2Client = createOAuthClient();
+    const authUrl = oAuth2Client.generateAuthUrl({
+      access_type: "offline",
+      scope: GMAIL_SCOPES,
+      prompt: "consent",
+    });
+
+    // Start temporary HTTP server for redirect
+    const server = createServer(async (req, res) => {
+      if (!req.url?.includes("/?code=")) return;
+      const qs = new URL(req.url, "http://127.0.0.1:3000");
+      const code = qs.searchParams.get("code");
+      if (!code) return;
+
+      try {
+        const { tokens } = await oAuth2Client.getToken(code);
+        oAuth2Client.setCredentials(tokens);
+        await storeTokens(tokens);
+        res.end("✅ Authentication successful! You may close this tab.");
+        console.log("✅ Gmail tokens saved successfully.");
+      } catch (err) {
+        console.error("❌ Token exchange failed:", err);
+        res.end("❌ Authentication failed. Check console for details.");
+      }
+
+      // Destroy server after auth
+      setTimeout(() => server.destroy(), 500);
+    });
+
+    destroyer(server);
+    server.listen(3000, () => {
+      console.log("🌐 Listening for OAuth redirect on http://127.0.0.1:3000");
+      open(authUrl);
+    });
+
+    return { success: true, message: "OAuth flow started." };
+  } catch (err: any) {
+    console.error("gmail-auth error:", err);
+    return { success: false, error: err.message };
+  }
+});
+
+// === Step 2: Check Auth ===
+ipcMain.handle("gmail-check-auth", async () => {
+  try {
+    const tokens = await loadTokens();
+    return { authorized: !!tokens };
+  } catch (err: any) {
+    return { authorized: false, error: err.message };
+  }
+});
+
+// === Step 3: List Messages ===
+ipcMain.handle("gmail-list", async (_e, maxResults = 20) => {
+  try {
+    const tokens = await loadTokens();
+    if (!tokens) throw new Error("No tokens found. Please sign in first.");
+
+    const oAuth2Client = createOAuthClient();
+    oAuth2Client.setCredentials(tokens);
+
+    const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
+    const res = await gmail.users.messages.list({ userId: "me", maxResults });
+    const msgs = res.data.messages || [];
+
+    const details = await Promise.all(
+      msgs.map(async (m) => {
+        const detail = await gmail.users.messages.get({
+          userId: "me",
+          id: m.id!,
+          format: "metadata",
+          metadataHeaders: ["From", "Subject", "Date"],
+        });
+        return {
+          id: m.id,
+          snippet: detail.data.snippet,
+          headers: detail.data.payload?.headers || [],
+        };
+      })
+    );
+
+    return { success: true, messages: details };
+  } catch (err: any) {
+    console.error("gmail-list error:", err);
+    return { success: false, error: err.message };
+  }
+});
+
+// === Step 4: Sign Out ===
+ipcMain.handle("gmail-signout", async () => {
+  try {
+    await clearTokens();
+    return { success: true };
+  } catch (err: any) {
+    console.error("gmail-signout error:", err);
+    return { success: false, error: err.message };
+  }
+});
+
+console.log("✅ Gmail IPC (Loopback OAuth) channels loaded successfully.");

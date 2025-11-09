@@ -10,10 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
+    "googleapis": "^165.0.0",
+    "keytar": "^7.9.0",
     "lucide-react": "^0.553.0",
+    "open": "^10.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.9.5"
+    "react-router-dom": "^7.9.5",
+    "server-destroy": "^1.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",

@@ -6,11 +6,21 @@ console.log("🔌 [Preload] Script loaded. Injecting APIs...");
 
 // ✅ Allowed IPC channels (keep this in sync with main.ts)
 const validInvokes = [
+  // File system
   "readDir",
   "readFile",
   "writeFile",
-  "deleteFile", // 🟢 Added delete support
+  "deleteFile",
+
+  // Gmail integration
+  "gmail-auth",
+  "gmail-exchange",
+  "gmail-list",
+  "gmail-get-message",
+  "gmail-signout",
+  "gmail-check-auth",
 ];
+
 
 // ✅ Optional: Log allowed channels
 console.log("📡 [Preload] Allowed IPC channels:", validInvokes);
