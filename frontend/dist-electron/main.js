@@ -806,7 +806,7 @@ function enableDestroy(server) {
       connections[key].destroy();
   };
 }
-const destroyer = /* @__PURE__ */ getDefaultExportFromCjs(serverDestroy);
+const serverDestroy$1 = /* @__PURE__ */ getDefaultExportFromCjs(serverDestroy);
 dotenv.config({ path: path$1.join(process.cwd(), ".env") });
 createRequire(import.meta.url);
 const __dirname = path$1.dirname(fileURLToPath(import.meta.url));
@@ -916,7 +916,7 @@ function createOAuthClient() {
   const id = process.env.GOOGLE_OAUTH_CLIENT_ID;
   const secret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
   const redirectUri = "http://127.0.0.1:3000";
-  if (!id || !secret) throw new Error("Missing Google OAuth credentials in .env");
+  if (!id || !secret) throw new Error("❌ Missing Google OAuth credentials in .env");
   return new google.auth.OAuth2(id, secret, redirectUri);
 }
 async function storeTokens(tokens) {
@@ -952,10 +952,13 @@ ipcMain.handle("gmail-auth", async () => {
       } catch (err) {
         console.error("❌ Token exchange failed:", err);
         res.end("❌ Authentication failed. Check console for details.");
+      } finally {
+        setTimeout(() => {
+          if (server.listening) server.destroy();
+        }, 500);
       }
-      setTimeout(() => server.destroy(), 500);
     });
-    destroyer(server);
+    serverDestroy$1(server);
     server.listen(3e3, () => {
       console.log("🌐 Listening for OAuth redirect on http://127.0.0.1:3000");
       open(authUrl);

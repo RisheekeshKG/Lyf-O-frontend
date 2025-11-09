@@ -9,7 +9,7 @@ import { google } from "googleapis";
 import keytar from "keytar";
 import { createServer } from "http";
 import open from "open";
-import destroyer from "server-destroy";
+import serverDestroy from "server-destroy"; // ✅ fixed import typing
 
 // ===================================================
 // 🌱 BASE SETUP
@@ -33,7 +33,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 let win: BrowserWindow | null;
 const IS_DEV = Boolean(VITE_DEV_SERVER_URL);
 
-// === Data folder (for JSON files)
+// === Data Folder ===
 const DEV_DATA_DIR = path.resolve(process.env.APP_ROOT!, "../frontend/data");
 const PROD_DATA_DIR = path.join(app.getPath("userData"), "data");
 const DATA_DIR = IS_DEV ? DEV_DATA_DIR : PROD_DATA_DIR;
@@ -144,7 +144,7 @@ ipcMain.handle("deleteFile", async (_e, filename: string) => {
 });
 
 // ===================================================
-// 📬 GMAIL INTEGRATION (Loopback Redirect Flow)
+// 📬 GMAIL INTEGRATION (Loopback OAuth)
 // ===================================================
 
 const GMAIL_SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
@@ -156,7 +156,7 @@ function createOAuthClient() {
   const secret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
   const redirectUri = "http://127.0.0.1:3000";
 
-  if (!id || !secret) throw new Error("Missing Google OAuth credentials in .env");
+  if (!id || !secret) throw new Error("❌ Missing Google OAuth credentials in .env");
   return new google.auth.OAuth2(id, secret, redirectUri);
 }
 
@@ -171,7 +171,7 @@ async function clearTokens() {
   await keytar.deletePassword(OAUTH_SERVICE, OAUTH_ACCOUNT);
 }
 
-// === Step 1: Auth Flow ===
+// === Step 1: OAuth Flow ===
 ipcMain.handle("gmail-auth", async () => {
   try {
     const oAuth2Client = createOAuthClient();
@@ -181,9 +181,9 @@ ipcMain.handle("gmail-auth", async () => {
       prompt: "consent",
     });
 
-    // Start temporary HTTP server for redirect
     const server = createServer(async (req, res) => {
       if (!req.url?.includes("/?code=")) return;
+
       const qs = new URL(req.url, "http://127.0.0.1:3000");
       const code = qs.searchParams.get("code");
       if (!code) return;
@@ -192,18 +192,20 @@ ipcMain.handle("gmail-auth", async () => {
         const { tokens } = await oAuth2Client.getToken(code);
         oAuth2Client.setCredentials(tokens);
         await storeTokens(tokens);
+
         res.end("✅ Authentication successful! You may close this tab.");
         console.log("✅ Gmail tokens saved successfully.");
       } catch (err) {
         console.error("❌ Token exchange failed:", err);
         res.end("❌ Authentication failed. Check console for details.");
+      } finally {
+        setTimeout(() => {
+          if (server.listening) server.destroy(); // ✅ Properly typed now
+        }, 500);
       }
-
-      // Destroy server after auth
-      setTimeout(() => server.destroy(), 500);
     });
 
-    destroyer(server);
+    serverDestroy(server); // ✅ Patch server to include destroy()
     server.listen(3000, () => {
       console.log("🌐 Listening for OAuth redirect on http://127.0.0.1:3000");
       open(authUrl);
