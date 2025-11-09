@@ -1,0 +1,117 @@
+{
+  "name": "Cisco Interview Preparation Time Table",
+  "type": "table",
+  "columns": [
+    {
+      "name": "Task",
+      "type": "text"
+    },
+    {
+      "name": "Status",
+      "type": "options",
+      "options": [
+        "In Progress",
+        "Completed"
+      ]
+    },
+    {
+      "name": "Priority",
+      "type": "options",
+      "options": [
+        "High",
+        "Medium",
+        "Low"
+      ]
+    },
+    {
+      "name": "Due Date",
+      "type": "date"
+    }
+  ],
+  "values": [
+    [
+      "Research Cisco company culture & recent news",
+      "In Progress",
+      "Medium",
+      "2024-07-15"
+    ],
+    [
+      "Review Networking Fundamentals (OSI, TCP/IP, Subnetting)",
+      "In Progress",
+      "High",
+      "2024-07-18"
+    ],
+    [
+      "Study Routing Protocols (OSPF, EIGRP, BGP basics)",
+      "In Progress",
+      "High",
+      "2024-07-22"
+    ],
+    [
+      "Practice Switching Concepts (VLANs, STP, EtherChannel)",
+      "In Progress",
+      "High",
+      "2024-07-25"
+    ],
+    [
+      "Hands-on: Configure basic router/switch commands (Packet Tracer/GNS3)",
+      "In Progress",
+      "High",
+      "2024-07-28"
+    ],
+    [
+      "Understand Network Security (ACLs, VPNs, Firewalls basics)",
+      "In Progress",
+      "Medium",
+      "2024-07-30"
+    ],
+    [
+      "Review Wireless Networking concepts (WLANs, APs)",
+      "In Progress",
+      "Low",
+      "2024-08-02"
+    ],
+    [
+      "Practice Data Structures & Algorithms (if applicable for role)",
+      "In Progress",
+      "Medium",
+      "2024-08-05"
+    ],
+    [
+      "Prepare answers for common behavioral questions (STAR method)",
+      "In Progress",
+      "High",
+      "2024-08-07"
+    ],
+    [
+      "Develop 'Tell me about yourself' elevator pitch",
+      "In Progress",
+      "Medium",
+      "2024-08-08"
+    ],
+    [
+      "Prepare questions to ask the interviewer",
+      "In Progress",
+      "Medium",
+      "2024-08-09"
+    ],
+    [
+      "Conduct a mock interview with a peer or mentor",
+      "In Progress",
+      "High",
+      "2024-08-12"
+    ],
+    [
+      "Review resume and LinkedIn profile for relevance",
+      "In Progress",
+      "Low",
+      "2024-07-14"
+    ],
+    [
+      "Final review of key Cisco technologies and solutions",
+      "In Progress",
+      "High",
+      "2024-08-14"
+    ]
+  ]
+}
