@@ -1,0 +1,78 @@
+{
+  "name": "Today's Amazon Interview Preparation Timetable",
+  "type": "table",
+  "columns": [
+    {
+      "name": "Date",
+      "type": "date"
+    },
+    {
+      "name": "Topic",
+      "type": "text"
+    },
+    {
+      "name": "Description",
+      "type": "text"
+    },
+    {
+      "name": "Duration",
+      "type": "text"
+    }
+  ],
+  "values": [
+    [
+      "2023-10-27",
+      "Amazon Leadership Principles Review",
+      "Deep dive into 'Customer Obsession' and 'Ownership' LPs. Brainstorm 2-3 STAR stories for each.",
+      "90 mins"
+    ],
+    [
+      "2023-10-27",
+      "Advanced Data Structures & Algorithms",
+      "Solve a LeetCode Hard problem involving Dynamic Programming or Graph Algorithms. Focus on optimal solutions.",
+      "2 hours"
+    ],
+    [
+      "2023-10-27",
+      "System Design Fundamentals",
+      "Study distributed system concepts: CAP theorem, consistency models, load balancing strategies. Review common design patterns.",
+      "90 mins"
+    ],
+    [
+      "2023-10-27",
+      "Behavioral Interview Practice",
+      "Practice answering Amazon LP questions aloud. Record yourself and critically evaluate delivery, conciseness, and STAR structure.",
+      "1 hour"
+    ],
+    [
+      "2023-10-27",
+      "Coding Session - Medium Problems",
+      "Solve 2 LeetCode Medium problems, focusing on array manipulation and string processing. Implement in preferred language.",
+      "90 mins"
+    ],
+    [
+      "2023-10-27",
+      "System Design Case Study",
+      "Work through a complex system design problem (e.g., Design Twitter, Design a URL Shortener). Focus on trade-offs and scalability.",
+      "2 hours"
+    ],
+    [
+      "2023-10-27",
+      "Mock Interview Simulation",
+      "Conduct a full-length mock interview (behavioral + technical) with a peer or using an online platform. Simulate interview pressure.",
+      "1 hour"
+    ],
+    [
+      "2023-10-27",
+      "Interview Feedback & Self-Reflection",
+      "Analyze performance from the mock interview. Identify specific areas for improvement in technical skills and behavioral responses.",
+      "45 mins"
+    ],
+    [
+      "2023-10-27",
+      "Next Day Planning & Resource Review",
+      "Based on today's prep, outline key topics for tomorrow. Review Amazon interview guides and common pitfalls.",
+      "30 mins"
+    ]
+  ]
+}

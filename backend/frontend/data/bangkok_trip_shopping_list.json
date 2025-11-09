@@ -1,0 +1,42 @@
+{
+  "name": "Bangkok Trip Shopping List",
+  "type": "todolist",
+  "items": [
+    {
+      "task": "Buy lightweight, breathable clothing suitable for Bangkok's heat and humidity.",
+      "done": false
+    },
+    {
+      "task": "Purchase a universal travel adapter for charging electronics in Thailand.",
+      "done": false
+    },
+    {
+      "task": "Get a small, secure cross-body bag or fanny pack for daily excursions.",
+      "done": false
+    },
+    {
+      "task": "Stock up on sunscreen (high SPF) and insect repellent.",
+      "done": false
+    },
+    {
+      "task": "Buy comfortable walking sandals or shoes for exploring temples and markets.",
+      "done": false
+    },
+    {
+      "task": "Acquire a portable power bank for phone and gadget charging on the go.",
+      "done": false
+    },
+    {
+      "task": "Purchase a quick-dry towel for convenience, especially if visiting beaches or pools.",
+      "done": false
+    },
+    {
+      "task": "Get any necessary over-the-counter medications (e.g., anti-diarrhea, pain relievers).",
+      "done": false
+    },
+    {
+      "task": "Consider buying a small, foldable umbrella for sun protection or sudden rain.",
+      "done": false
+    }
+  ]
+}

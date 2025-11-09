@@ -1,0 +1,78 @@
+{
+  "name": "Phi Phi Island Timetable",
+  "type": "table",
+  "columns": [
+    {
+      "name": "Date",
+      "type": "date"
+    },
+    {
+      "name": "Topic",
+      "type": "text"
+    },
+    {
+      "name": "Description",
+      "type": "text"
+    },
+    {
+      "name": "Duration",
+      "type": "text"
+    }
+  ],
+  "values": [
+    [
+      "2023-10-28",
+      "Arrival & Check-in",
+      "Arrive at Phi Phi Don, transfer to your accommodation, and settle in.",
+      "Half-day (afternoon)"
+    ],
+    [
+      "2023-10-29",
+      "Explore Phi Phi Don & Viewpoint",
+      "Walk around Tonsai Village, explore local shops, and hike to Phi Phi Viewpoint for sunset.",
+      "Full day"
+    ],
+    [
+      "2023-10-30",
+      "Maya Bay & Pileh Lagoon Tour",
+      "Full-day boat tour to the iconic Maya Bay (from 'The Beach'), swimming and snorkeling in Pileh Lagoon.",
+      "Full day"
+    ],
+    [
+      "2023-10-31",
+      "Bamboo Island & Snorkeling",
+      "Speedboat trip to the pristine Bamboo Island for relaxation on white sands and snorkeling in clear waters.",
+      "Half-day"
+    ],
+    [
+      "2023-10-31",
+      "Shark Point Snorkeling",
+      "Afternoon snorkeling adventure at Shark Point to observe marine life, including harmless reef sharks.",
+      "2-3 hours"
+    ],
+    [
+      "2023-11-01",
+      "Viking Cave & Monkey Beach",
+      "Visit the mysterious Viking Cave for ancient paintings, then relax and spot monkeys at Monkey Beach.",
+      "Half-day"
+    ],
+    [
+      "2023-11-01",
+      "Sunset Cruise & Dinner",
+      "Enjoy a scenic sunset cruise around the islands, possibly including dinner and squid fishing.",
+      "Evening"
+    ],
+    [
+      "2023-11-02",
+      "Relaxation & Departure Prep",
+      "Free time for beach relaxation, enjoying a final Thai massage, souvenir shopping, and preparing for departure.",
+      "Full day"
+    ],
+    [
+      "2023-11-03",
+      "Departure",
+      "Check-out from accommodation and transfer to the pier for your departure from Phi Phi Island.",
+      "Morning"
+    ]
+  ]
+}

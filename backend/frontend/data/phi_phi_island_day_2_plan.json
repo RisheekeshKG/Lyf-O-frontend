@@ -1,0 +1,84 @@
+{
+  "name": "Phi Phi Island Day 2 Plan",
+  "type": "table",
+  "columns": [
+    {
+      "name": "Date",
+      "type": "date"
+    },
+    {
+      "name": "Topic",
+      "type": "text"
+    },
+    {
+      "name": "Description",
+      "type": "text"
+    },
+    {
+      "name": "Duration",
+      "type": "text"
+    }
+  ],
+  "values": [
+    [
+      "2023-11-21",
+      "Morning Refresh",
+      "Enjoy a leisurely breakfast at the resort/guesthouse.",
+      "1 hour"
+    ],
+    [
+      "2023-11-21",
+      "Island Hopping Departure",
+      "Meet your longtail boat or speedboat for a full-day tour.",
+      "30 mins"
+    ],
+    [
+      "2023-11-21",
+      "Maya Bay Exploration",
+      "Visit the iconic Maya Bay (from the boat if direct access is restricted).",
+      "1 hour 30 mins"
+    ],
+    [
+      "2023-11-21",
+      "Loh Samah Bay Snorkel",
+      "Dive into the clear waters for snorkeling at Loh Samah Bay.",
+      "1 hour"
+    ],
+    [
+      "2023-11-21",
+      "Pileh Lagoon Swim",
+      "Swim and relax in the stunning emerald waters of Pileh Lagoon.",
+      "1 hour"
+    ],
+    [
+      "2023-11-21",
+      "Beachside Lunch",
+      "Enjoy a delicious packed lunch on a secluded beach or on the boat.",
+      "1 hour"
+    ],
+    [
+      "2023-11-21",
+      "Viking Cave & Monkey Beach",
+      "Pass by Viking Cave and observe the playful monkeys at Monkey Beach.",
+      "1 hour 30 mins"
+    ],
+    [
+      "2023-11-21",
+      "Return & Relax",
+      "Head back to Tonsai Pier, freshen up, and enjoy some downtime.",
+      "2 hours"
+    ],
+    [
+      "2023-11-21",
+      "Sunset Viewpoint",
+      "Hike up to one of Phi Phi's viewpoints for breathtaking sunset views.",
+      "1 hour 30 mins"
+    ],
+    [
+      "2023-11-21",
+      "Dinner & Fire Show",
+      "Savor a seafood dinner and watch an exciting fire show on the beach.",
+      "2 hours"
+    ]
+  ]
+}

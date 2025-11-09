@@ -1,0 +1,78 @@
+{
+  "name": "Day 3 Plan",
+  "type": "table",
+  "columns": [
+    {
+      "name": "Date",
+      "type": "date"
+    },
+    {
+      "name": "Topic",
+      "type": "text"
+    },
+    {
+      "name": "Description",
+      "type": "text"
+    },
+    {
+      "name": "Duration",
+      "type": "text"
+    }
+  ],
+  "values": [
+    [
+      "2023-10-29",
+      "Morning Check-in & Review",
+      "Quick recap of Day 1 & 2 key takeaways and address any lingering questions.",
+      "45 min"
+    ],
+    [
+      "2023-10-29",
+      "Advanced Topic Deep Dive",
+      "Explore a more complex or nuanced aspect of the activity's core subject.",
+      "1 hour 30 min"
+    ],
+    [
+      "2023-10-29",
+      "Practical Application Workshop",
+      "Hands-on session applying learned concepts to a specific, real-world scenario.",
+      "2 hours"
+    ],
+    [
+      "2023-10-29",
+      "Group Problem Solving Challenge",
+      "Collaborate in teams to tackle a challenging problem related to the activity's scope.",
+      "1 hour"
+    ],
+    [
+      "2023-10-29",
+      "Lunch Break & Networking",
+      "Time for rest, informal discussions, and connecting with other participants.",
+      "1 hour"
+    ],
+    [
+      "2023-10-29",
+      "Expert Q&A Session",
+      "Opportunity to ask specific questions to an activity expert or facilitator for clarity.",
+      "45 min"
+    ],
+    [
+      "2023-10-29",
+      "Individual Project/Task Time",
+      "Dedicated time for personal application, refinement, or development based on the activity.",
+      "1 hour 30 min"
+    ],
+    [
+      "2023-10-29",
+      "Reflection & Future Planning",
+      "Summarize learnings, identify next steps, and set personal goals for continued engagement.",
+      "1 hour"
+    ],
+    [
+      "2023-10-29",
+      "Activity Wrap-up & Feedback",
+      "Final thoughts, acknowledgements, and collection of feedback for future improvements.",
+      "30 min"
+    ]
+  ]
+}

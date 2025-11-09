@@ -1,0 +1,90 @@
+{
+  "name": "Untitled",
+  "type": "todolist",
+  "items": [
+    {
+      "task": "Review OSPF advanced features: LSA types, area types (stub, totally stubby, NSSA), route summarization, virtual links, authentication.",
+      "done": false
+    },
+    {
+      "task": "Deep dive into BGP: attributes (path selection), route reflectors, confederations, communities, regular expressions, troubleshooting.",
+      "done": false
+    },
+    {
+      "task": "Master EIGRP advanced concepts: DUAL algorithm, unequal-cost load balancing, summarization, stub routing, authentication.",
+      "done": false
+    },
+    {
+      "task": "Study STP variations and best practices: RSTP, MSTP, BPDU Guard, Root Guard, Loop Guard, PortFast.",
+      "done": false
+    },
+    {
+      "task": "Understand VLAN Trunking Protocol (VTP) modes, pruning, and security considerations.",
+      "done": false
+    },
+    {
+      "task": "Review EtherChannel (LACP/PAgP) configuration, load balancing methods, and troubleshooting.",
+      "done": false
+    },
+    {
+      "task": "Familiarize with Cisco IOS/IOS-XE/NX-OS/ASA CLI commands and common troubleshooting tools (ping, traceroute, show commands, debug).",
+      "done": false
+    },
+    {
+      "task": "Explore Network Security: ACLs (standard, extended, named), VPNs (IPsec, SSL), NAT/PAT, Firewall concepts (stateful vs. stateless).",
+      "done": false
+    },
+    {
+      "task": "Understand Cisco ASA/FTD firewall features, contexts, and common configurations.",
+      "done": false
+    },
+    {
+      "task": "Study Cisco ISE (Identity Services Engine) core functionalities: authentication, authorization, accounting (AAA), BYOD, guest access.",
+      "done": false
+    },
+    {
+      "task": "Review Wireless LAN Controller (WLC) architecture, AP modes, roaming, and security (WPA2-Enterprise, 802.1X).",
+      "done": false
+    },
+    {
+      "task": "Investigate Data Center Networking: Cisco Nexus OS features, Virtual Port-Channels (vPC), FabricPath/TRILL concepts.",
+      "done": false
+    },
+    {
+      "task": "Learn about Cisco ACI (Application Centric Infrastructure): concepts (EPG, BD, VRF, Bridge Domain), policy model, fabric access.",
+      "done": false
+    },
+    {
+      "task": "Understand SD-WAN (Viptela/Meraki/Catalyst SD-WAN) architecture, components, and policy creation.",
+      "done": false
+    },
+    {
+      "task": "Explore Network Automation and Programmability: Python scripting for network tasks, Ansible playbooks, NETCONF/RESTCONF APIs.",
+      "done": false
+    },
+    {
+      "task": "Practice network design scenarios: campus, data center, WAN, security design principles.",
+      "done": false
+    },
+    {
+      "task": "Review QoS mechanisms: classification, marking, queuing, policing, shaping, congestion management.",
+      "done": false
+    },
+    {
+      "task": "Prepare for common troubleshooting scenarios for routing, switching, and security issues.",
+      "done": false
+    },
+    {
+      "task": "Research Cisco's current technology trends and strategic initiatives (e.g., intent-based networking, SASE).",
+      "done": false
+    },
+    {
+      "task": "Prepare answers for behavioral and situational interview questions (e.g., 'Tell me about a challenging project', 'How do you handle conflict?').",
+      "done": false
+    },
+    {
+      "task": "Conduct mock interviews focusing on advanced technical and problem-solving questions.",
+      "done": false
+    }
+  ]
+}

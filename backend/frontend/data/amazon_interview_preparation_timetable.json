@@ -1,0 +1,84 @@
+{
+  "name": "Amazon Interview Preparation Timetable",
+  "type": "table",
+  "columns": [
+    {
+      "name": "Date",
+      "type": "date"
+    },
+    {
+      "name": "Topic",
+      "type": "text"
+    },
+    {
+      "name": "Description",
+      "type": "text"
+    },
+    {
+      "name": "Duration",
+      "type": "text"
+    }
+  ],
+  "values": [
+    [
+      "2024-07-22",
+      "Amazon Leadership Principles (LPs)",
+      "Deep dive into all 16 LPs. Prepare advanced STAR stories, focusing on specific Amazon scenarios and quantifiable impact. Review common behavioral questions.",
+      "2 hours"
+    ],
+    [
+      "2024-07-23",
+      "Data Structures & Algorithms: Advanced Trees",
+      "Practice complex tree problems (e.g., Red-Black Trees, AVL Trees, Segment Trees, Trie). Focus on optimal time/space complexity and edge cases.",
+      "2.5 hours"
+    ],
+    [
+      "2024-07-24",
+      "System Design: Scalable Distributed Systems",
+      "Design a highly available and scalable service (e.g., a distributed cache, a notification system). Focus on components, trade-offs, consistency models, and fault tolerance.",
+      "3 hours"
+    ],
+    [
+      "2024-07-25",
+      "Behavioral Interview Prep: Conflict & Failure",
+      "Refine STAR stories for challenging behavioral questions, specifically around handling conflict, dealing with failure, and taking calculated risks. Emphasize advanced self-reflection.",
+      "1.5 hours"
+    ],
+    [
+      "2024-07-26",
+      "Algorithms: Dynamic Programming & Backtracking",
+      "Tackle hard Dynamic Programming and Backtracking problems. Understand memoization vs. tabulation, state space optimization, and common patterns.",
+      "2.5 hours"
+    ],
+    [
+      "2024-07-27",
+      "System Design: API Design & Microservices",
+      "Focus on designing robust RESTful APIs, understanding microservice communication patterns (sync/async), and managing data consistency across distributed services.",
+      "2 hours"
+    ],
+    [
+      "2024-07-28",
+      "Mock Interview: Coding & LP Focus",
+      "Conduct a full mock interview with a peer or mentor, including a hard coding problem and 3-4 Amazon Leadership Principle questions. Get detailed feedback.",
+      "1.5 hours"
+    ],
+    [
+      "2024-07-29",
+      "Data Structures & Algorithms: Graph Algorithms",
+      "Master advanced graph algorithms (e.g., Dijkstra's, Floyd-Warshall, MSTs, Topological Sort). Practice real-world applications and variations.",
+      "2.5 hours"
+    ],
+    [
+      "2024-07-30",
+      "System Design: Database Choices & Scaling",
+      "Review different database types (SQL, NoSQL, NewSQL) and their use cases in large-scale systems. Discuss sharding, replication, and indexing strategies.",
+      "2 hours"
+    ],
+    [
+      "2024-07-31",
+      "Final Review & Weak Areas Practice",
+      "Identify and review any remaining weak areas across coding, system design, and behavioral topics. Practice quick problem-solving and LP story recall.",
+      "2 hours"
+    ]
+  ]
+}
