@@ -1,69 +1,94 @@
-import React, { useState } from 'react';
-import { Send } from 'lucide-react';
+import React, { useState } from "react";
+import { Send, RotateCcw } from "lucide-react";
 
 interface ChatMessage {
-  sender: 'user' | 'ai';
+  sender: "user" | "ai";
   text: string;
 }
 
 interface ChatViewProps {
   messages: ChatMessage[];
   onSendMessage: (message: string) => void;
+  onResetChat?: () => void; // ✅ new prop
 }
 
-export const ChatView: React.FC<ChatViewProps> = ({ messages, onSendMessage }) => {
-  const [inputValue, setInputValue] = useState('');
+export const ChatView: React.FC<ChatViewProps> = ({
+  messages,
+  onSendMessage,
+  onResetChat,
+}) => {
+  const [input, setInput] = useState("");
+
+  const handleSend = () => {
+    if (input.trim()) {
+      onSendMessage(input.trim());
+      setInput("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSend();
+  };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              message.sender === 'user' ? 'justify-end' : 'justify-start'
-            }`}
-          >
-            <div
-              className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl p-3 rounded-lg ${
-                message.sender === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-              }`}
-            >
-              {message.text}
-            </div>
-          </div>
-        ))}
+    <div className="flex flex-col h-full bg-[#1f1f1f]">
+      {/* === Header === */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-100">AI Chat</h2>
+        <button
+          onClick={onResetChat}
+          className="flex items-center gap-2 px-2 py-1 text-sm text-gray-300 hover:text-white hover:bg-[#2b2b2b] rounded-md transition"
+          title="Start a new chat"
+        >
+          <RotateCcw size={16} />
+          <span>New Chat</span>
+        </button>
       </div>
 
-      {/* Message Input */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (inputValue.trim()) {
-              onSendMessage(inputValue);
-              setInputValue('');
-            }
-          }}
-          className="flex space-x-2"
+      {/* === Messages === */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {messages.length === 0 ? (
+          <div className="text-center text-gray-500 mt-10">
+            💬 Start a conversation...
+          </div>
+        ) : (
+          messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`flex ${
+                msg.sender === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`max-w-[75%] p-3 rounded-xl text-sm ${
+                  msg.sender === "user"
+                    ? "bg-blue-600 text-white"
+                    : "bg-[#2b2b2b] text-gray-200"
+                }`}
+              >
+                {msg.text}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* === Input Bar === */}
+      <div className="p-3 border-t border-gray-700 flex items-center gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Type your message..."
+          className="flex-1 bg-[#2b2b2b] text-gray-100 p-2 rounded-md border border-gray-600 focus:border-blue-500 focus:outline-none"
+        />
+        <button
+          onClick={handleSend}
+          className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition"
         >
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <Send size={20} />
-          </button>
-        </form>
+          <Send size={18} />
+        </button>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { FileModal } from "./components/FileModal";
+import { DeleteModal } from "./components/DeleteModal";
 import { TableView } from "./components/TableView";
 import { TodoListView } from "./components/TodoListView";
 import { ChatView } from "./components/ChatView";
@@ -24,10 +25,13 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeData, setActiveData] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<string | null>(null);
 
-  // ✅ Load all JSON files in /data
+  // ✅ Load JSON files
   const loadDataFiles = useCallback(async () => {
     try {
+      // Wait for preload to initialize
       for (let i = 0; i < 20 && !window.electronAPI; i++) {
         await new Promise((r) => setTimeout(r, 50));
       }
@@ -38,10 +42,8 @@ const HomePage: React.FC = () => {
         return;
       }
 
-      console.log("📂 Fetching files from /data...");
       const files: string[] = await window.electronAPI.invoke("readDir");
       const jsonFiles = files.filter((f) => f.endsWith(".json"));
-      console.log("📄 Found:", jsonFiles);
 
       const loaded: DataFile[] = [];
       for (const file of jsonFiles) {
@@ -57,7 +59,6 @@ const HomePage: React.FC = () => {
 
       setDataFiles(loaded);
 
-      // Reset active selection safely
       if (loaded.length > 0) {
         setActiveIndex(0);
         setActiveData(loaded[0].data);
@@ -76,10 +77,10 @@ const HomePage: React.FC = () => {
     loadDataFiles();
   }, [loadDataFiles]);
 
-  // ✅ Save file helper
+  // ✅ Save file
   const saveFile = useCallback(async (file: string, data: any) => {
+    if (!window.electronAPI) return;
     try {
-      if (!window.electronAPI) return;
       await window.electronAPI.invoke(
         "writeFile",
         file,
@@ -98,32 +99,44 @@ const HomePage: React.FC = () => {
     setActiveView("data");
   };
 
-  // ✅ Delete file
-  const handleDeleteFile = async (file: string) => {
-    if (!window.confirm(`🗑️ Delete "${file}" permanently?`)) return;
+  // ✅ Request delete modal
+  const requestFileDelete = (file: string) => {
+    setFileToDelete(file);
+    setShowDeleteModal(true);
+  };
+
+  // ✅ Confirm file deletion
+  const confirmDeleteFile = async () => {
+    if (!fileToDelete) return;
     try {
-      console.log("🧭 Requesting deletion for:", file);
-      const result = await window.electronAPI.invoke("deleteFile", file);
-      console.log("🧾 deleteFile result:", result);
+      const result = await window.electronAPI.invoke("deleteFile", fileToDelete);
 
       if (result?.success) {
-        console.log("🗑️ File deleted:", file);
-        await loadDataFiles();
+        const updatedFiles = dataFiles.filter((f) => f.file !== fileToDelete);
+        setDataFiles(updatedFiles);
 
-        // If the deleted file was active, clear state
-        if (dataFiles[activeIndex!]?.file === file) {
-          setActiveIndex(null);
-          setActiveData(null);
+        // Reset active file if deleted one was active
+        if (dataFiles[activeIndex!]?.file === fileToDelete) {
+          if (updatedFiles.length > 0) {
+            setActiveIndex(0);
+            setActiveData(updatedFiles[0].data);
+          } else {
+            setActiveIndex(null);
+            setActiveData(null);
+          }
         }
       } else {
         alert("❌ Failed to delete file: " + (result?.error || "Unknown error"));
       }
     } catch (err) {
       console.error("❌ Delete failed:", err);
+    } finally {
+      setShowDeleteModal(false);
+      setFileToDelete(null);
     }
   };
 
-  // ✅ Update and persist file data
+  // ✅ Update file data and persist
   const updateActiveData = (newData: any) => {
     if (activeIndex === null) return;
     setActiveData(newData);
@@ -133,10 +146,9 @@ const HomePage: React.FC = () => {
     saveFile(updated[activeIndex].file, newData);
   };
 
-  // ✅ Chat handler (normal + MCP tool mode)
+  // ✅ Chat handler (AI + tool mode)
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
-
     setChatMessages((prev) => [...prev, { sender: "user", text: message }]);
 
     try {
@@ -150,14 +162,13 @@ const HomePage: React.FC = () => {
       const data = await res.json();
       console.log("🤖 AI Response:", data);
 
-      // === If AI returns a JSON for new file (tool mode)
+      // 🧩 Tool-generated file
       if (data.mode === "tool" && data.result?.content) {
         const jsonData = data.result.content;
         const fileName = `${jsonData.name
           .toLowerCase()
           .replace(/\s+/g, "_")}.json`;
 
-        console.log("🧩 Creating new AI file:", fileName);
         await window.electronAPI.invoke(
           "writeFile",
           fileName,
@@ -177,7 +188,7 @@ const HomePage: React.FC = () => {
         return;
       }
 
-      // === Normal chat reply
+      // 💬 Normal AI response
       const aiMessage =
         data.generated_text || data.result || "⚙️ No response received.";
       setChatMessages((prev) => [...prev, { sender: "ai", text: aiMessage }]);
@@ -233,7 +244,7 @@ const HomePage: React.FC = () => {
     updateActiveData({ ...activeData, items: newItems });
   };
 
-  // === Render states ===
+  // === Render ===
   if (loading)
     return (
       <div className="flex items-center justify-center h-screen bg-[#191919] text-gray-400">
@@ -250,16 +261,21 @@ const HomePage: React.FC = () => {
         onFileSelect={handleFileSelect}
         onViewChange={setActiveView}
         onCreateNew={() => setShowModal(true)}
-        onDeleteFile={handleDeleteFile}
+        onDeleteFile={requestFileDelete}
       />
 
+      {/* ✅ Chat always accessible */}
       <main className="flex-1 flex flex-col overflow-y-auto scroll-smooth">
-        {!activeData ? (
+        {activeView === "chat" ? (
+          <ChatView
+            messages={chatMessages}
+            onSendMessage={handleSendMessage}
+            onResetChat={() => setChatMessages([])} // 🌀 New Chat button
+          />
+        ) : !activeData ? (
           <div className="flex items-center justify-center flex-1 text-gray-400">
             No JSON file found in /data
           </div>
-        ) : activeView === "chat" ? (
-          <ChatView messages={chatMessages} onSendMessage={handleSendMessage} />
         ) : activeData.type === "table" ? (
           <TableView
             data={activeData}
@@ -277,17 +293,30 @@ const HomePage: React.FC = () => {
           />
         ) : (
           <div className="flex items-center justify-center flex-1 text-gray-400">
-            Unsupported file type: {activeData.type}
+            Unsupported file type: {activeData?.type ?? "unknown"}
           </div>
         )}
       </main>
 
+      {/* ✅ File Creation Modal */}
       {showModal && (
         <FileModal
           onClose={() => setShowModal(false)}
           onCreated={() => {
             setShowModal(false);
             loadDataFiles();
+          }}
+        />
+      )}
+
+      {/* ✅ Delete Confirmation Modal */}
+      {showDeleteModal && fileToDelete && (
+        <DeleteModal
+          fileName={fileToDelete}
+          onConfirm={confirmDeleteFile}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setFileToDelete(null);
           }}
         />
       )}

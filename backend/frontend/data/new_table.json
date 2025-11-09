@@ -1,5 +1,5 @@
 {
-  "name": "Work Tasks",
+  "name": "New Table",
   "type": "table",
   "columns": [
     {
@@ -28,12 +28,5 @@
       "type": "date"
     }
   ],
-  "values": [
-    [
-      "",
-      "Completed",
-      "High",
-      "2025-10-30"
-    ]
-  ]
+  "values": []
 }

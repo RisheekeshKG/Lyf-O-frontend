@@ -23,6 +23,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
   ? path.join(process.env.APP_ROOT, "public")
   : RENDERER_DIST;
 
+// 🌍 Debug info
 console.log("🌍 ENV CHECK:");
 console.log("   VITE_DEV_SERVER_URL =", VITE_DEV_SERVER_URL);
 console.log("   MAIN_DIST =", MAIN_DIST);
@@ -44,7 +45,7 @@ console.log("📁 DEV_DATA_DIR =", DEV_DATA_DIR);
 console.log("📁 PROD_DATA_DIR =", PROD_DATA_DIR);
 console.log("📁 Active DATA_DIR =", DATA_DIR);
 
-// === Ensure data dir ===
+// === Ensure data dir exists ===
 async function ensureDataDir() {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
@@ -53,7 +54,7 @@ async function ensureDataDir() {
     if (!fsSync.existsSync(DATA_DIR)) {
       console.warn("⚠️ Data folder not found!");
     } else {
-      console.log("📄 Files inside data:", fsSync.readdirSync(DATA_DIR));
+      console.log("📄 Files in data dir:", fsSync.readdirSync(DATA_DIR));
     }
   } catch (err) {
     console.error("❌ Failed to create data dir:", err);
@@ -67,11 +68,6 @@ function resolvePreloadPath() {
     path.join(__dirname, "../dist-electron/preload.js"),
     path.join(__dirname, "../../frontend/dist-electron/preload.js"),
   ];
-
-  console.log("🧭 Checking preload paths:");
-  possiblePaths.forEach((p) => {
-    console.log("   →", p, fsSync.existsSync(p) ? "✅ exists" : "❌ missing");
-  });
 
   for (const p of possiblePaths) {
     if (fsSync.existsSync(p)) {
@@ -100,41 +96,32 @@ function createWindow() {
     },
   });
 
-  console.log("🪟 BrowserWindow created with preload:", preloadPath);
-
   win.webContents.on("did-finish-load", () => {
     console.log("✅ Renderer finished loading.");
     win?.webContents.send(
       "fromMain",
-      `👋 Hello from main process! (Mode: ${IS_DEV ? "DEV" : "PROD"})`
+      `👋 Hello from main process! (${IS_DEV ? "DEV" : "PROD"})`
     );
   });
 
-  win.webContents.on("did-fail-load", (_e, code, desc) => {
-    console.error("❌ Renderer failed to load:", code, desc);
-  });
-
   if (VITE_DEV_SERVER_URL) {
-    console.log("🌐 Loading DEV URL:", VITE_DEV_SERVER_URL);
     win.loadURL(VITE_DEV_SERVER_URL);
   } else {
-    const htmlPath = path.join(RENDERER_DIST, "index.html");
-    console.log("📄 Loading HTML file:", htmlPath);
-    win.loadFile(htmlPath);
+    win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
 
-  win.on("closed", () => console.log("🪟 Window closed."));
+  win.on("closed", () => {
+    win = null;
+  });
 }
 
 // === Lifecycle ===
 app.whenReady().then(async () => {
-  console.log("🚀 Electron app ready.");
   await ensureDataDir();
   createWindow();
 });
 
 app.on("window-all-closed", () => {
-  console.log("🧹 All windows closed.");
   if (process.platform !== "darwin") {
     app.quit();
     win = null;
@@ -142,7 +129,6 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
-  console.log("🔁 App activate event.");
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
@@ -150,12 +136,11 @@ app.on("activate", () => {
 // 🗂️ FILE SYSTEM IPC HANDLERS
 // ===================================================
 
-// 🧾 Read directory
+// 📂 Read directory
 ipcMain.handle("readDir", async (_event, relativeDir?: string) => {
   console.log("📂 IPC → readDir called with:", relativeDir);
   try {
     const fullPath = relativeDir ? path.join(DATA_DIR, relativeDir) : DATA_DIR;
-    console.log("   Reading directory:", fullPath);
     const files = await fs.readdir(fullPath, { withFileTypes: true });
     const fileList = files.filter((f) => f.isFile()).map((f) => f.name);
     console.log("   Files found:", fileList);
@@ -166,14 +151,13 @@ ipcMain.handle("readDir", async (_event, relativeDir?: string) => {
   }
 });
 
-// 📖 Read JSON file
+// 📖 Read file
 ipcMain.handle("readFile", async (_event, filename: string) => {
-  console.log("📖 IPC → readFile called:", filename);
   try {
     const safeName = path.basename(filename);
     const filePath = path.join(DATA_DIR, safeName);
     const data = await fs.readFile(filePath, "utf-8");
-    console.log("   Successfully read:", filePath);
+    console.log("📖 Read file:", filePath);
     return JSON.parse(data);
   } catch (error) {
     console.error(`❌ Error reading file ${filename}:`, error);
@@ -181,36 +165,36 @@ ipcMain.handle("readFile", async (_event, filename: string) => {
   }
 });
 
-// 💾 Write JSON file
+// 💾 Write file
 ipcMain.handle("writeFile", async (_event, filename: string, content: string) => {
-  console.log("💾 IPC → writeFile called:", filename);
   try {
     const safeName = path.basename(filename);
     const filePath = path.join(DATA_DIR, safeName);
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, content, "utf-8");
-    console.log(`✅ Successfully wrote to: ${filePath}`);
-    return true;
-  } catch (error) {
+    console.log(`💾 Wrote file: ${filePath}`);
+    return { success: true };
+  } catch (error: any) {
     console.error(`❌ Error writing file ${filename}:`, error);
-    throw error;
+    return { success: false, error: error.message };
   }
 });
 
-// 🗑️ Delete JSON file
+// 🗑️ Delete file
 ipcMain.handle("deleteFile", async (_event, filename: string) => {
   console.log("🗑️ IPC → deleteFile called:", filename);
   try {
     const safeName = path.basename(filename);
     const filePath = path.join(DATA_DIR, safeName);
-    if (fsSync.existsSync(filePath)) {
-      await fs.unlink(filePath);
-      console.log(`✅ File deleted: ${filePath}`);
-      return { success: true };
-    } else {
+
+    if (!fsSync.existsSync(filePath)) {
       console.warn(`⚠️ File not found: ${filePath}`);
       return { success: false, error: "File not found" };
     }
+
+    await fs.unlink(filePath);
+    console.log(`✅ Deleted file: ${filePath}`);
+    return { success: true };
   } catch (error: any) {
     console.error(`❌ Error deleting file ${filename}:`, error);
     return { success: false, error: error.message };

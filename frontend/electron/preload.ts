@@ -1,30 +1,36 @@
 // electron/preload.ts
 import { contextBridge, ipcRenderer } from "electron";
 
-// ✅ Quick log to prove preload executed
+// ✅ Startup log
 console.log("🔌 [Preload] Script loaded. Injecting APIs...");
 
-// ✅ Allowed IPC channels
-const validInvokes = ["readDir", "readFile", "writeFile"];
+// ✅ Allowed IPC channels (keep this in sync with main.ts)
+const validInvokes = [
+  "readDir",
+  "readFile",
+  "writeFile",
+  "deleteFile", // 🟢 Added delete support
+];
 
-// ✅ Optional: show what channels are allowed
+// ✅ Optional: Log allowed channels
 console.log("📡 [Preload] Allowed IPC channels:", validInvokes);
 
-// ✅ Safe bridge exposed to the renderer
+// ✅ Expose safe bridge to renderer
 contextBridge.exposeInMainWorld("electronAPI", {
-  // ---- invoke ----
+  // ---- invoke (async calls to main) ----
   invoke: (channel: string, ...args: any[]) => {
-    console.log(`[Preload → Renderer] invoke(${channel})`, args);
+    console.log(`[Preload → Renderer] invoke("${channel}")`, args);
 
     if (!validInvokes.includes(channel)) {
-      console.warn(`[Preload] ❌ Blocked invalid channel: ${channel}`);
+      const msg = `[Preload] ❌ Blocked invalid channel: ${channel}`;
+      console.warn(msg);
       return Promise.reject(new Error("Invalid channel"));
     }
 
     return ipcRenderer.invoke(channel, ...args);
   },
 
-  // ---- Listen for messages from main ----
+  // ---- onMainMessage (listen to async messages from main) ----
   onMainMessage: (cb: (msg: string) => void) => {
     console.log("[Preload] Listening for 'fromMain' messages...");
     ipcRenderer.on("fromMain", (_e, m) => {
@@ -33,7 +39,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     });
   },
 
-  // ---- Remove listener ----
+  // ---- removeMainListener ----
   removeMainListener: () => {
     console.log("[Preload] Removed all 'fromMain' listeners.");
     ipcRenderer.removeAllListeners("fromMain");
